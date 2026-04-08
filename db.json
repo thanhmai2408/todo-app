@@ -1,0 +1,6 @@
+{
+  "todos": [
+    { "id": 1, "text": "Buy groceries", "completed": false },
+    { "id": 2, "text": "Read a book", "completed": true }
+  ]
+}
