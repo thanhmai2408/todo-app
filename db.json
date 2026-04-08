@@ -1,6 +1,15 @@
 {
   "todos": [
-    { "id": 1, "text": "Buy groceries", "completed": false },
-    { "id": 2, "text": "Read a book", "completed": true }
-  ]
+    {
+      "id": "1",
+      "text": "Buy groceries",
+      "completed": false
+    },
+    {
+      "text": "payslip",
+      "completed": false,
+      "id": "baGb0x_MlpQ"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }
