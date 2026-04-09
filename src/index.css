@@ -1,1 +1,71 @@
-@import "tailwindcss";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
+@import "@fontsource/material-icons";
+@import "bulma/css/bulma.css";
+
+/* Subject tonal colors */
+:root {
+  --subj-math-bg:     #D3E4FD; --subj-math-on:     #1a47a0;
+  --subj-reading-bg:  #C9EFDB; --subj-reading-on:  #1a6b3c;
+  --subj-science-bg:  #E5DEFF; --subj-science-on:  #4a1fa8;
+  --subj-writing-bg:  #FFE0B3; --subj-writing-on:  #7a3d00;
+  --subj-art-bg:      #FFD8E6; --subj-art-on:      #8f0038;
+  --subj-music-bg:    #FFD8D6; --subj-music-on:    #8f0001;
+  --subj-exercise-bg: #BEEDEA; --subj-exercise-on: #005048;
+  --subj-other-bg:    #E8E8E8; --subj-other-on:    #3d3d3d;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ── App Layout ── */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #fafafa;
+  border-right: 1px solid #ededed;
+  padding: 20px 12px;
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+/* ── Material Icons ── */
+.material-icons {
+  font-family: 'Material Icons', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dbdbdb; border-radius: 3px; }
