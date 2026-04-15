@@ -106,7 +106,7 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
       </div>
 
       {/* Desktop two-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: generated ? '1fr 1fr' : '600px 1fr', gap: 32, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: generated ? '1fr 1fr' : '600px', gap: 32, alignItems: 'start' }}>
 
         {/* Left: input panel */}
         <div className="card">
@@ -114,7 +114,7 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
             <p className="title is-6 mb-4">Kid's Schedule Info</p>
 
             {/* Mode tabs */}
-            <div className="tabs mb-4">
+            <div className="tabs mb-3">
               <ul>
                 {MODES.map(m => (
                   <li key={m.id} className={mode === m.id ? 'is-active' : ''}>
@@ -125,6 +125,18 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            {/* Hint toast */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: '#ede9fe', borderRadius: 8,
+              padding: '10px 14px', marginBottom: 16,
+            }}>
+              <span className="material-icons" style={{ fontSize: 16, color: '#7c3aed', flexShrink: 0 }}>info</span>
+              <p style={{ fontSize: 13, color: '#5b21b6', margin: 0 }}>
+                Fill in your kid's schedule below, then click <strong>Generate</strong> to create AI-powered tasks.
+              </p>
             </div>
 
             {/* Type */}
@@ -335,13 +347,6 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="has-text-centered has-text-grey" style={{ padding: '64px 24px' }}>
-            <span className="material-icons has-text-grey-light" style={{ fontSize: 56, display: 'block', marginBottom: 16 }}>auto_awesome</span>
-            <p className="is-size-6">
-              Fill in your kid's schedule on the left, then click <strong>Generate</strong> to create AI-powered tasks.
-            </p>
           </div>
         )}
       </div>
