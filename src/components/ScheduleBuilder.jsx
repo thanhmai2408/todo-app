@@ -255,8 +255,8 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
           </div>
         </div>
 
-        {/* Right: AI preview or placeholder */}
-        {generated ? (
+        {/* Right: AI preview (shown once generated) */}
+        {generated && (
           <div className="card">
             <div className="card-content">
               <div className="level mb-4">
