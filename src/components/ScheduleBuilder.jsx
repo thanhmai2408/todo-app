@@ -100,7 +100,7 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 48px' }}>
 
       {/* Page header */}
-      <div className="mb-5">
+      <div className="mb-5 has-text-centered">
         <h1 className="title is-4 mb-1">Schedule Builder</h1>
         <p className="subtitle is-6 mt-0">Describe your kid's week — AI creates ADHD-friendly tasks.</p>
       </div>
@@ -178,13 +178,6 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={isListening ? stopListening : startListening}
-                  className={`button is-fullwidth ${isListening ? 'is-danger' : 'is-primary'}`}
-                >
-                  <span className="icon"><span className="material-icons" style={{ fontSize: 18 }}>{isListening ? 'stop' : 'mic'}</span></span>
-                  <span>{isListening ? 'Stop Recording' : 'Start Speaking'}</span>
-                </button>
               </div>
             )}
 
@@ -239,19 +232,29 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
               </div>
             )}
 
-            <button
-              onClick={handleGenerate}
-              disabled={loading || !inputText.trim()}
-              className={`button is-primary is-fullwidth mt-4 ${loading ? 'is-loading' : ''}`}
-              style={{ height: 44 }}
-            >
-              {!loading && (
-                <>
-                  <span className="icon"><span className="material-icons" style={{ fontSize: 18 }}>auto_awesome</span></span>
-                  <span>Generate Schedule with AI</span>
-                </>
+            <div className="mt-4" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              {mode === 'voice' && (
+                <button
+                  onClick={isListening ? stopListening : startListening}
+                  className={`button ${isListening ? 'is-danger' : 'is-primary'}`}
+                >
+                  <span className="icon"><span className="material-icons" style={{ fontSize: 18 }}>{isListening ? 'stop' : 'mic'}</span></span>
+                  <span>{isListening ? 'Stop Recording' : 'Start Speaking'}</span>
+                </button>
               )}
-            </button>
+              <button
+                onClick={handleGenerate}
+                disabled={loading || !inputText.trim()}
+                className={`button is-primary ${loading ? 'is-loading' : ''}`}
+              >
+                {!loading && (
+                  <>
+                    <span className="icon"><span className="material-icons" style={{ fontSize: 18 }}>auto_awesome</span></span>
+                    <span>Generate Schedule with AI</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

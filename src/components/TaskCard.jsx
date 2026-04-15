@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from 'react'
+
 const SUBJECTS = {
   math:     { icon: 'calculate',      bg: 'var(--subj-math-bg)',     on: 'var(--subj-math-on)'     },
   reading:  { icon: 'menu_book',      bg: 'var(--subj-reading-bg)',  on: 'var(--subj-reading-on)'  },
@@ -15,9 +17,23 @@ const PRIORITY_STYLES = {
   low:    { bg: '#dcfce7', color: '#16a34a', label: 'Low'      },
 }
 
-export default function TaskCard({ todo, onToggle, onToggleMomHelp, onDelete }) {
+export default function TaskCard({ todo, onToggle, onToggleMomHelp, onDelete, folders = [], onAssignFolder }) {
   const subj = SUBJECTS[todo.subject] || SUBJECTS.other
   const priorityStyle = PRIORITY_STYLES[todo.priority]
+  const [folderMenuOpen, setFolderMenuOpen] = useState(false)
+  const folderMenuRef = useRef(null)
+  const assignedFolder = folders.find(f => f.id === todo.folderId)
+
+  useEffect(() => {
+    if (!folderMenuOpen) return
+    function handleClick(e) {
+      if (folderMenuRef.current && !folderMenuRef.current.contains(e.target)) {
+        setFolderMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [folderMenuOpen])
 
   return (
     <div style={{
@@ -43,14 +59,15 @@ export default function TaskCard({ todo, onToggle, onToggleMomHelp, onDelete }) 
           {todo.subject || 'other'}
         </span>
 
-        {/* Priority tag */}
-        {todo.priority && priorityStyle && (
-          <span style={{
-            display: 'inline-flex', alignItems: 'center',
-            background: priorityStyle.bg, color: priorityStyle.color,
+        {/* Priority chip — only shown for high priority */}
+        {todo.priority === 'high' && (
+          <span title="High priority" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            background: '#fff7ed', color: '#ea580c',
             padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
           }}>
-            {priorityStyle.label}
+            <span className="material-icons" style={{ fontSize: 13 }}>bolt</span>
+            Priority
           </span>
         )}
 
@@ -100,20 +117,101 @@ export default function TaskCard({ todo, onToggle, onToggleMomHelp, onDelete }) 
           </span>
         )}
 
-        {/* Delete — pushed right */}
-        <button
-          onClick={() => onDelete(todo.id)}
-          aria-label="Delete"
-          style={{
-            marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
-            color: '#9ca3af', display: 'flex', alignItems: 'center', padding: '2px',
-            borderRadius: 6, transition: 'color 0.15s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-          onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
-        >
-          <span className="material-icons" style={{ fontSize: 18 }}>delete_outline</span>
-        </button>
+        {/* Folder chip — inline with other chips */}
+        {assignedFolder && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            background: '#f3f4f6', color: '#6b7280',
+            padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+          }}>
+            <span className="material-icons" style={{ fontSize: 13 }}>folder</span>
+            {assignedFolder.name}
+          </span>
+        )}
+
+        {/* Folder button + delete — pushed right */}
+        <div style={{ marginLeft: 'auto', position: 'relative', display: 'flex', alignItems: 'center', gap: 4 }} ref={folderMenuRef}>
+          {folders.length > 0 && (
+            <button
+              onClick={() => setFolderMenuOpen(o => !o)}
+              aria-label="Add to folder"
+              title="Add to folder"
+              style={{
+                background: folderMenuOpen ? '#ede9fe' : 'none', border: 'none', cursor: 'pointer',
+                color: folderMenuOpen ? '#4f46e5' : '#9ca3af', display: 'flex', alignItems: 'center', padding: '2px',
+                borderRadius: 6, transition: 'color 0.15s, background 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#4f46e5'; e.currentTarget.style.background = '#ede9fe' }}
+              onMouseLeave={e => { if (!folderMenuOpen) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.background = 'none' } }}
+            >
+              <span className="material-icons" style={{ fontSize: 18 }}>create_new_folder</span>
+            </button>
+          )}
+
+          {/* Folder dropdown */}
+          {folderMenuOpen && (
+            <div style={{
+              position: 'absolute', top: '100%', right: 0, marginTop: 6,
+              background: '#fff', borderRadius: 10,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+              border: '1px solid #e5e7eb',
+              minWidth: 150, zIndex: 200, overflow: 'hidden',
+            }}>
+              {assignedFolder && (
+                <button
+                  onClick={() => { onAssignFolder(todo.id, null); setFolderMenuOpen(false) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    width: '100%', padding: '9px 14px',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 12, fontWeight: 500, color: '#9ca3af',
+                    textAlign: 'left', borderBottom: '1px solid #f3f4f6',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  <span className="material-icons" style={{ fontSize: 14 }}>folder_off</span>
+                  Remove from folder
+                </button>
+              )}
+              {folders.map(folder => (
+                <button
+                  key={folder.id}
+                  onClick={() => { onAssignFolder(todo.id, folder.id); setFolderMenuOpen(false) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    width: '100%', padding: '9px 14px',
+                    background: todo.folderId === folder.id ? '#ede9fe' : 'none',
+                    border: 'none', cursor: 'pointer',
+                    fontSize: 13, fontWeight: 500,
+                    color: todo.folderId === folder.id ? '#4f46e5' : '#374151',
+                    textAlign: 'left', transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => { if (todo.folderId !== folder.id) e.currentTarget.style.background = '#f9fafb' }}
+                  onMouseLeave={e => { if (todo.folderId !== folder.id) e.currentTarget.style.background = 'none' }}
+                >
+                  <span className="material-icons" style={{ fontSize: 15 }}>folder</span>
+                  {folder.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Delete */}
+          <button
+            onClick={() => onDelete(todo.id)}
+            aria-label="Delete"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: '#9ca3af', display: 'flex', alignItems: 'center', padding: '2px',
+              borderRadius: 6, transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+            onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+          >
+            <span className="material-icons" style={{ fontSize: 18 }}>delete_outline</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Bottom row: checkbox + task text ── */}

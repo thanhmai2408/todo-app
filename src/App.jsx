@@ -115,6 +115,12 @@ export default function App() {
     setTodos(prev => prev.filter(t => t.id !== id))
   }
 
+  async function assignFolder(todoId, folderId) {
+    const res = await fetch(`${API}/${todoId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ folderId }) })
+    const updated = await res.json()
+    setTodos(prev => prev.map(t => t.id === updated.id ? updated : t))
+  }
+
   function handleSaveProfile(p) { setKidProfile(p); localStorage.setItem('kidProfile', JSON.stringify(p)) }
   function handleSaveApiKey(k) { setApiKey(k); localStorage.setItem('claudeApiKey', k) }
 
@@ -273,7 +279,7 @@ export default function App() {
 
         {/* ── Main Content ── */}
         <main className="app-main">
-          {tab === 'today'    && <TodayView todos={todos} onAdd={addTodo} onToggle={toggleTodo} onToggleMomHelp={toggleMomHelp} onDelete={deleteTodo} kidName={kidName} showAddForm={showAddForm} onSetShowAddForm={setShowAddForm} />}
+          {tab === 'today'    && <TodayView todos={todos} onAdd={addTodo} onToggle={toggleTodo} onToggleMomHelp={toggleMomHelp} onDelete={deleteTodo} onAssignFolder={assignFolder} folders={folders} kidName={kidName} showAddForm={showAddForm} onSetShowAddForm={setShowAddForm} />}
           {tab === 'schedule' && <ScheduleBuilder kidProfile={kidProfile} onAddTasks={addTasks} hasApiKey={!!apiKey} />}
           {tab === 'settings' && <SettingsView kidProfile={kidProfile} onSaveProfile={handleSaveProfile} apiKey={apiKey} onSaveApiKey={handleSaveApiKey} />}
         </main>

@@ -16,7 +16,7 @@ function getBlock(time) {
   return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'
 }
 
-export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onDelete, kidName, showAddForm, onSetShowAddForm }) {
+export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onDelete, onAssignFolder, folders = [], kidName, showAddForm, onSetShowAddForm }) {
   const [form, setForm] = useState({ text: '', subject: '', scheduledTime: '', timeEstimate: '', priority: 'medium' })
 
   const today = new Date().toISOString().slice(0, 10)
@@ -79,11 +79,11 @@ export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onD
         </div>
       </div>
 
-      {/* ── 3-column grid: left 2 cols = content, right 1 col = progress ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginTop: 20 }}>
+      {/* ── Two-column layout: tasks flex-fill, progress sidebar fixed ── */}
+      <div style={{ display: 'flex', gap: 20, marginTop: 20, alignItems: 'stretch' }}>
 
-        {/* Left 2 columns — tasks or empty state */}
-        <div style={{ gridColumn: '1 / 3', padding: 20 }}>
+        {/* Left — tasks */}
+        <div style={{ flex: 1, minWidth: 0, padding: 20 }}>
 
           {/* Add New Task form */}
           {showAddForm && (
@@ -227,7 +227,7 @@ export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onD
                       {[...tasks]
                         .sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''))
                         .map(todo => (
-                          <TaskCard key={todo.id} todo={todo} onToggle={onToggle} onToggleMomHelp={onToggleMomHelp} onDelete={onDelete} />
+                          <TaskCard key={todo.id} todo={todo} onToggle={onToggle} onToggleMomHelp={onToggleMomHelp} onDelete={onDelete} folders={folders} onAssignFolder={onAssignFolder} />
                         ))}
                     </div>
                   </section>
@@ -237,8 +237,8 @@ export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onD
           )}
         </div>
 
-        {/* Right column — progress cards */}
-        <div style={{ gridColumn: '3 / 4', padding: 20 }}>
+        {/* Right — progress sidebar */}
+        <div style={{ width: 240, flexShrink: 0, padding: '20px 0' }}>
           <ProgressBar todos={todos} />
         </div>
 
