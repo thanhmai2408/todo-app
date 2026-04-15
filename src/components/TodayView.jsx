@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import TaskCard from './TaskCard'
+import ProgressBar from './ProgressBar'
 
 const BLOCKS = [
   { id: 'morning',   label: 'Morning',   icon: 'light_mode',  range: [0, 12]  },
@@ -15,9 +16,8 @@ function getBlock(time) {
   return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'
 }
 
-export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onDelete }) {
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ text: '', subject: 'other', scheduledTime: '', timeEstimate: '', priority: 'medium' })
+export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onDelete, kidName, showAddForm, onSetShowAddForm }) {
+  const [form, setForm] = useState({ text: '', subject: '', scheduledTime: '', timeEstimate: '', priority: 'medium' })
 
   const today = new Date().toISOString().slice(0, 10)
   const todayTasks = todos.filter(t => !t.date || t.date === today)
@@ -31,164 +31,217 @@ export default function TodayView({ todos, onAdd, onToggle, onToggleMomHelp, onD
     e.preventDefault()
     if (!form.text.trim()) return
     await onAdd({
-      text: form.text.trim(), subject: form.subject,
+      text: form.text.trim(), subject: form.subject || 'other',
       scheduledTime: form.scheduledTime,
       timeEstimate: form.timeEstimate ? parseInt(form.timeEstimate) : null,
       priority: form.priority, date: today,
       completed: false, momHelped: false,
     })
-    setForm({ text: '', subject: 'other', scheduledTime: '', timeEstimate: '', priority: 'medium' })
-    setShowForm(false)
+    setForm({ text: '', subject: '', scheduledTime: '', timeEstimate: '', priority: 'medium' })
+    onSetShowAddForm(false)
   }
 
   const totalDone = todayTasks.filter(t => t.completed).length
+  const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 48px' }}>
+    <div style={{ padding: '32px 40px' }}>
 
-      {/* Header */}
-      <div className="level mb-5">
-        <div className="level-left">
-          <div>
-            <h1 className="title is-4 mb-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </h1>
-            <p className="subtitle is-6 mt-0">
-              {todayTasks.length === 0
-                ? 'No tasks scheduled yet'
-                : `${totalDone} of ${todayTasks.length} tasks completed`
-              }
-            </p>
-          </div>
-        </div>
-        <div className="level-right">
-          <button className="button is-primary" onClick={() => setShowForm(v => !v)}>
-            <span className="icon"><span className="material-icons" style={{ fontSize: 18 }}>add</span></span>
-            <span>Add Task</span>
-          </button>
+      {/* ── Hero Banner (full width, stretches with container) ── */}
+      <div style={{
+        position: 'relative',
+        background: 'linear-gradient(130deg, #3730a3 0%, #4f46e5 60%, #6d52e8 100%)',
+        borderRadius: 16,
+        padding: '36px 44px',
+        overflow: 'hidden',
+        marginBottom: 20,
+        width: '100%',
+      }}>
+        {/* Decorative shapes */}
+        <div style={{ position: 'absolute', right: -30, top: -40, width: 220, height: 180, background: 'rgba(255,255,255,0.07)', borderRadius: 20, transform: 'rotate(18deg)' }} />
+        <div style={{ position: 'absolute', right: 80, top: 10, width: 130, height: 110, background: 'rgba(255,255,255,0.06)', borderRadius: 14 }} />
+        <div style={{ position: 'absolute', right: 30, bottom: -30, width: 170, height: 110, background: 'rgba(255,255,255,0.05)', borderRadius: 18, transform: 'rotate(-12deg)' }} />
+        <div style={{ position: 'absolute', right: 160, top: -20, width: 80, height: 80, background: 'rgba(255,255,255,0.05)', borderRadius: 10, transform: 'rotate(30deg)' }} />
+
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ color: '#fff', fontSize: 30, fontWeight: 700, marginBottom: 8, lineHeight: 1.2 }}>
+            Hello {kidName}!
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, marginBottom: 4 }}>
+            Today is {dateStr}
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 14 }}>
+            {todayTasks.length === 0
+              ? "Ready to conquer the day? Let's add your first task!"
+              : `${totalDone} of ${todayTasks.length} tasks completed`}
+          </p>
         </div>
       </div>
 
-      {/* Add Task form */}
-      {showForm && (
-        <div className="card mb-5">
-          <div className="card-content">
-            <p className="title is-6 mb-4">New Task</p>
-            <form onSubmit={handleAdd}>
-              <div className="field mb-4">
-                <label className="label is-small">Task description</label>
-                <div className="control">
+      {/* ── 3-column grid: left 2 cols = content, right 1 col = progress ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginTop: 20 }}>
+
+        {/* Left 2 columns — tasks or empty state */}
+        <div style={{ gridColumn: '1 / 3', padding: 20 }}>
+
+          {/* Add New Task form */}
+          {showAddForm && (
+            <div style={{
+              background: '#fff', borderRadius: 16,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              padding: '20px 24px', marginBottom: 24,
+            }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <span style={{ fontWeight: 700, fontSize: 16, color: '#111827' }}>Add New Task</span>
+                <button
+                  onClick={() => onSetShowAddForm(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6 }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#374151'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+                >
+                  <span className="material-icons" style={{ fontSize: 20 }}>close</span>
+                </button>
+              </div>
+
+              <form onSubmit={handleAdd}>
+                {/* Task description */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                    Task Description
+                  </label>
                   <input
                     className="input"
                     placeholder="What needs to be done?"
                     value={form.text}
                     onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
                     autoFocus
+                    style={{ borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 14 }}
                   />
                 </div>
-              </div>
 
-              <div className="columns">
-                <div className="column">
-                  <div className="field">
-                    <label className="label is-small">Subject</label>
-                    <div className="control">
-                      <div className="select is-fullwidth">
-                        <select value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}>
-                          {SUBJECTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                        </select>
-                      </div>
+                {/* Subject + Priority row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Subject</label>
+                    <div className="select is-fullwidth">
+                      <select
+                        value={form.subject}
+                        onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+                        style={{ borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 14 }}
+                      >
+                        <option value="" disabled>Select</option>
+                        {SUBJECTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Priority</label>
+                    <div className="select is-fullwidth">
+                      <select
+                        value={form.priority}
+                        onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
+                        style={{ borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 14 }}
+                      >
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
                     </div>
                   </div>
                 </div>
-                <div className="column">
-                  <div className="field">
-                    <label className="label is-small">Priority</label>
-                    <div className="control">
-                      <div className="select is-fullwidth">
-                        <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}>
-                          <option value="high">High</option>
-                          <option value="medium">Medium</option>
-                          <option value="low">Low</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="column">
-                  <div className="field">
-                    <label className="label is-small">Scheduled time</label>
-                    <div className="control">
+
+                {/* Bottom bar: icons + button */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {/* Schedule time icon — toggles time input */}
+                    <label title="Scheduled time" style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 36, height: 36, borderRadius: 8, cursor: 'pointer',
+                      color: form.scheduledTime ? '#4f46e5' : '#9ca3af',
+                      background: form.scheduledTime ? '#ede9fe' : 'transparent',
+                      transition: 'all 0.15s', position: 'relative',
+                    }}>
+                      <span className="material-icons" style={{ fontSize: 20 }}>calendar_today</span>
                       <input
                         type="time"
-                        className="input"
                         value={form.scheduledTime}
                         onChange={e => setForm(f => ({ ...f, scheduledTime: e.target.value }))}
+                        style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%' }}
                       />
-                    </div>
+                    </label>
+                    {/* Person / assignee icon (decorative) */}
+                    <button type="button" style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 36, height: 36, borderRadius: 8,
+                      background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af',
+                    }}>
+                      <span className="material-icons" style={{ fontSize: 20 }}>person_add</span>
+                    </button>
+                    {/* Notifications icon (decorative) */}
+                    <button type="button" style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 36, height: 36, borderRadius: 8,
+                      background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af',
+                    }}>
+                      <span className="material-icons" style={{ fontSize: 20 }}>notifications_none</span>
+                    </button>
                   </div>
+
+                  <button
+                    type="submit"
+                    style={{
+                      background: '#4f46e5', color: '#fff', border: 'none',
+                      borderRadius: 10, padding: '10px 24px',
+                      fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#4338ca'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#4f46e5'}
+                  >
+                    Add Task
+                  </button>
                 </div>
-                <div className="column">
-                  <div className="field">
-                    <label className="label is-small">Duration (min)</label>
-                    <div className="control">
-                      <input
-                        type="number"
-                        className="input"
-                        placeholder="e.g. 20"
-                        value={form.timeEstimate}
-                        onChange={e => setForm(f => ({ ...f, timeEstimate: e.target.value }))}
-                        min="5" max="120"
-                      />
+              </form>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {todayTasks.length === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 24px' }}>
+              <img src="/empty-state.svg" alt="No tasks" style={{ width: 258, height: 194, marginBottom: 16 }} />
+              <p style={{ fontSize: 15, color: '#6b7280', fontWeight: 500 }}>No tasks added for today</p>
+            </div>
+          )}
+
+          {/* Time blocks */}
+          {todayTasks.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              {BLOCKS.map(block => {
+                const tasks = byBlock[block.id]
+                if (!tasks.length) return null
+                return (
+                  <section key={block.id}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {[...tasks]
+                        .sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''))
+                        .map(todo => (
+                          <TaskCard key={todo.id} todo={todo} onToggle={onToggle} onToggleMomHelp={onToggleMomHelp} onDelete={onDelete} />
+                        ))}
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="buttons is-right">
-                <button type="button" className="button is-light" onClick={() => setShowForm(false)}>Cancel</button>
-                <button type="submit" className="button is-primary">Add Task</button>
-              </div>
-            </form>
-          </div>
+                  </section>
+                )
+              })}
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Empty state */}
-      {todayTasks.length === 0 && (
-        <div className="has-text-centered" style={{ padding: '80px 24px' }}>
-          <span className="material-icons" style={{ fontSize: 64, color: '#dbdbdb', display: 'block', marginBottom: 16 }}>backpack</span>
-          <p className="title is-5">No tasks for today</p>
-          <p className="subtitle is-6">Add tasks manually or use <strong>Build</strong> to generate a schedule with AI.</p>
+        {/* Right column — progress cards */}
+        <div style={{ gridColumn: '3 / 4', padding: 20 }}>
+          <ProgressBar todos={todos} />
         </div>
-      )}
 
-      {/* Time blocks — 2-column grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
-        {BLOCKS.map(block => {
-          const tasks = byBlock[block.id]
-          if (!tasks.length) return null
-          return (
-            <section key={block.id}>
-              <div className="level is-mobile mb-3">
-                <div className="level-left" style={{ gap: 8 }}>
-                  <span className="material-icons has-text-grey-light" style={{ fontSize: 18 }}>{block.icon}</span>
-                  <span className="is-size-6 has-text-weight-semibold has-text-grey">{block.label}</span>
-                </div>
-                <div className="level-right">
-                  <span className="tag is-light is-small">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[...tasks]
-                  .sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''))
-                  .map(todo => (
-                    <TaskCard key={todo.id} todo={todo} onToggle={onToggle} onToggleMomHelp={onToggleMomHelp} onDelete={onDelete} />
-                  ))}
-              </div>
-            </section>
-          )
-        })}
       </div>
     </div>
   )

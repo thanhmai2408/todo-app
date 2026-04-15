@@ -22,29 +22,189 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+/* ── Primary color override (indigo) ── */
+:root {
+  --bulma-primary-h: 243deg;
+  --bulma-primary-s: 75%;
+  --bulma-primary-l: 59%;
+  --bulma-primary: hsl(243, 75%, 59%);
+}
+
 /* ── App Layout ── */
 .app-layout {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   overflow: hidden;
 }
 
+/* ── Top Navbar ── */
+.app-topbar {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+.app-brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.3px;
+}
+
+.app-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: background 0.15s;
+  position: relative;
+}
+.app-icon-btn:hover { background: #f3f4f6; }
+.app-icon-btn .material-icons { font-size: 22px; }
+
+.app-icon-btn .notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 1.5px solid #fff;
+}
+
+.app-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.app-avatar .material-icons { font-size: 38px; color: #9ca3af; margin-top: 4px; }
+
+.app-topbar-add-btn {
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.app-topbar-add-btn:hover { background: #4338ca; }
+
+/* ── Body row ── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Left Sidebar ── */
 .app-sidebar {
-  width: 280px;
+  width: 220px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
-  background-color: #fafafa;
-  border-right: 1px solid #ededed;
-  padding: 20px 12px;
+  background-color: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  padding: 12px 8px;
 }
 
+.app-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  margin-bottom: 2px;
+}
+.app-nav-item:hover { background: #f3f4f6; color: #374151; }
+.app-nav-item.is-active { background: #ede9fe; color: #4f46e5; }
+.app-nav-item .material-icons { font-size: 18px; }
+.app-nav-item.is-active .material-icons { color: #4f46e5; }
+
+.app-folder-item { font-size: 13px; padding: 7px 12px; }
+
+.app-sidebar-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 10px 4px;
+}
+
+.app-add-folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+  width: 100%;
+  text-align: left;
+}
+.app-add-folder-btn:hover { background: #ede9fe; }
+.app-add-folder-btn .material-icons { font-size: 16px; }
+
+.app-sidebar-bottom {
+  margin-top: auto;
+  padding: 8px 4px 0;
+}
+
+/* ── Main Content ── */
 .app-main {
   flex: 1;
   overflow-y: auto;
   background-color: #ffffff;
+}
+
+/* ── Right Sidebar ── */
+.app-right-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  background-color: #f9fafb;
+  border-left: 1px solid #e5e7eb;
+  padding: 24px 16px;
 }
 
 /* ── Material Icons ── */

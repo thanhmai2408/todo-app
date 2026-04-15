@@ -1,4 +1,4 @@
-export default function ProgressBar({ todos }) {
+export default function ProgressBar({ todos, row = false }) {
   const today = new Date().toISOString().slice(0, 10)
   const todayTasks = todos.filter(t => t.date === today || !t.date)
   const total     = todayTasks.length
@@ -13,35 +13,56 @@ export default function ProgressBar({ todos }) {
     completionPct >= 75   ? 'Almost there!'   :
     completionPct >= 50   ? 'Halfway through' :
     completionPct >= 25   ? 'Good start!'     :
-                            'Ready to go'
+                            'Ready to Go'
+
+  const cardStyle = {
+    background: '#fff',
+    borderRadius: 12,
+    padding: '16px 20px',
+    boxShadow: '0 1px 6px rgba(0,0,0,0.07)',
+    ...(row ? { flex: 1 } : { marginBottom: 16 }),
+  }
+
+  const trackStyle = {
+    height: 6,
+    background: '#e5e7eb',
+    borderRadius: 3,
+    overflow: 'hidden',
+    margin: '10px 0 8px',
+  }
+
+  const fillStyle = (pct) => ({
+    height: '100%',
+    width: `${pct}%`,
+    background: '#4f46e5',
+    borderRadius: 3,
+    transition: 'width 0.4s ease',
+  })
 
   return (
-    <div style={{ padding: '0 4px' }}>
+    <div style={row ? { display: 'flex', gap: 16 } : {}}>
       {/* Completion */}
-      <div className="box" style={{ padding: '12px 16px', marginBottom: 10, backgroundColor: '#ebfffc' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <span className="is-size-7 has-text-weight-medium">{encouragement}</span>
-          <span className="is-size-6 has-text-weight-bold has-text-primary">{completionPct}%</span>
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 600, fontSize: 14, color: '#111827' }}>{encouragement}</span>
+          <span style={{ fontWeight: 700, fontSize: 14, color: '#4f46e5' }}>{completionPct}%</span>
         </div>
-        <progress className="progress is-primary is-small mb-1" value={completionPct} max="100">
-          {completionPct}%
-        </progress>
-        <p className="help">{completed} of {total} tasks done</p>
+        <div style={trackStyle}>
+          <div style={fillStyle(completionPct)} />
+        </div>
+        <p style={{ fontSize: 12, color: '#6b7280' }}>{completed} of {total} tasks done</p>
       </div>
 
       {/* Mom help */}
-      <div className="box" style={{ padding: '12px 16px', backgroundColor: '#fff5f7' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <span className="is-size-7 has-text-weight-medium" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span className="material-icons" style={{ fontSize: 14 }}>volunteer_activism</span>
-            Mom helped
-          </span>
-          <span className="is-size-6 has-text-weight-bold has-text-danger">{momHelpPct}%</span>
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 600, fontSize: 14, color: '#111827' }}>Mom's help</span>
+          <span style={{ fontWeight: 700, fontSize: 14, color: '#4f46e5' }}>{momHelpPct}%</span>
         </div>
-        <progress className="progress is-danger is-small mb-1" value={momHelpPct} max="100">
-          {momHelpPct}%
-        </progress>
-        <p className="help">{momHelped} of {total} tasks</p>
+        <div style={trackStyle}>
+          <div style={fillStyle(momHelpPct)} />
+        </div>
+        <p style={{ fontSize: 12, color: '#6b7280' }}>{momHelped} of {total} tasks</p>
       </div>
     </div>
   )

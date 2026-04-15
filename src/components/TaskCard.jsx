@@ -9,129 +9,165 @@ const SUBJECTS = {
   other:    { icon: 'task',           bg: 'var(--subj-other-bg)',    on: 'var(--subj-other-on)'    },
 }
 
-const PRIORITY_COLOR = { high: '#cc0f35', medium: '#f4a015', low: '#257942' }
+const PRIORITY_STYLES = {
+  high:   { bg: '#fee2e2', color: '#dc2626', label: 'Priority' },
+  medium: { bg: '#fef3c7', color: '#d97706', label: 'Medium'   },
+  low:    { bg: '#dcfce7', color: '#16a34a', label: 'Low'      },
+}
 
 export default function TaskCard({ todo, onToggle, onToggleMomHelp, onDelete }) {
   const subj = SUBJECTS[todo.subject] || SUBJECTS.other
+  const priorityStyle = PRIORITY_STYLES[todo.priority]
 
   return (
-    <div
-      className="card"
-      style={{
-        borderLeft: `4px solid ${subj.on}`,
-        opacity: todo.completed ? 0.55 : 1,
-        transition: 'opacity 0.2s',
-      }}
-    >
-      <div className="card-content" style={{ padding: '12px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+    <div style={{
+      background: '#fff',
+      borderRadius: 12,
+      borderLeft: `4px solid ${subj.on}`,
+      boxShadow: '0 1px 6px rgba(0,0,0,0.06)',
+      padding: '12px 16px',
+      opacity: todo.completed ? 0.6 : 1,
+      transition: 'opacity 0.2s',
+    }}>
 
-          {/* Checkbox */}
+      {/* ── Top row: tags + actions ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+
+        {/* Subject tag */}
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 3,
+          background: subj.bg, color: subj.on,
+          padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+          textTransform: 'capitalize',
+        }}>
+          {todo.subject || 'other'}
+        </span>
+
+        {/* Priority tag */}
+        {todo.priority && priorityStyle && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center',
+            background: priorityStyle.bg, color: priorityStyle.color,
+            padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+          }}>
+            {priorityStyle.label}
+          </span>
+        )}
+
+        {/* Mom's Help tag (toggleable) */}
+        {todo.momHelped ? (
           <button
-            onClick={() => onToggle(todo)}
-            aria-label={todo.completed ? 'Mark incomplete' : 'Mark complete'}
+            onClick={() => onToggleMomHelp(todo)}
+            title="Remove mom's help"
             style={{
-              flexShrink: 0, marginTop: 2, width: 24, height: 24, borderRadius: '50%',
-              border: todo.completed ? 'none' : '2px solid #b5b5b5',
-              backgroundColor: todo.completed ? '#00d1b2' : 'transparent',
-              color: 'white', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s, border 0.2s',
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: '#fce7f3', color: '#be185d',
+              padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+              border: 'none', cursor: 'pointer',
             }}
           >
-            {todo.completed && (
-              <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
-                <path d="M1 5l3.5 3.5L12 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
+            <span className="material-icons" style={{ fontSize: 13 }}>account_circle</span>
+            Mom's Help
           </button>
+        ) : (
+          <button
+            onClick={() => onToggleMomHelp(todo)}
+            title="Mark mom helped"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              background: 'none', color: '#d1d5db',
+              padding: '3px 6px', borderRadius: 20, fontSize: 12,
+              border: '1.5px dashed #e5e7eb', cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#be185d'; e.currentTarget.style.color = '#be185d' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#d1d5db' }}
+          >
+            <span className="material-icons" style={{ fontSize: 13 }}>favorite_border</span>
+            Mom's Help
+          </button>
+        )}
 
-          {/* Content */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Tags row */}
-            <div className="tags mb-1" style={{ gap: 4, flexWrap: 'wrap' }}>
-              <span
-                className="tag is-small"
-                style={{ backgroundColor: subj.bg, color: subj.on, display: 'inline-flex', alignItems: 'center', gap: 3 }}
-              >
-                <span className="material-icons" style={{ fontSize: 12 }}>{subj.icon}</span>
-                {todo.subject || 'other'}
-              </span>
+        {/* AI badge */}
+        {todo.aiGenerated && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            background: '#ede9fe', color: '#7c3aed',
+            padding: '3px 8px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+          }}>
+            <span className="material-icons" style={{ fontSize: 11 }}>auto_awesome</span>
+            AI
+          </span>
+        )}
 
-              {todo.priority && (
-                <span
-                  style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: PRIORITY_COLOR[todo.priority] || '#aaa', flexShrink: 0, alignSelf: 'center' }}
-                  title={`${todo.priority} priority`}
-                />
-              )}
-
-              {todo.aiGenerated && (
-                <span className="tag is-info is-light is-small" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                  <span className="material-icons" style={{ fontSize: 11 }}>auto_awesome</span> AI
-                </span>
-              )}
-            </div>
-
-            {/* Task text */}
-            <p
-              className="is-size-6"
-              style={{
-                margin: '0 0 6px',
-                color: todo.completed ? '#7a7a7a' : '#363636',
-                textDecoration: todo.completed ? 'line-through' : 'none',
-                fontWeight: 500,
-              }}
-            >
-              {todo.text}
-            </p>
-
-            {/* Meta */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              {todo.scheduledTime && (
-                <span className="is-size-7 has-text-grey" style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <span className="material-icons" style={{ fontSize: 13 }}>schedule</span>
-                  {todo.scheduledTime}
-                </span>
-              )}
-              {todo.timeEstimate && (
-                <span className="tag is-light is-small" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                  <span className="material-icons" style={{ fontSize: 12 }}>timer</span>
-                  {todo.timeEstimate} min
-                </span>
-              )}
-              {todo.notes && (
-                <span className="is-size-7 has-text-grey" style={{ fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <span className="material-icons" style={{ fontSize: 12 }}>lightbulb</span>
-                  {todo.notes}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
-            <button
-              className={`button is-small ${todo.momHelped ? 'is-danger is-light' : 'is-light'}`}
-              onClick={() => onToggleMomHelp(todo)}
-              title={todo.momHelped ? 'Mom helped' : 'Did mom help?'}
-              style={{ width: 32, height: 32, padding: 0 }}
-            >
-              <span className="material-icons" style={{ fontSize: 16 }}>
-                {todo.momHelped ? 'favorite' : 'favorite_border'}
-              </span>
-            </button>
-            <button
-              className="button is-small is-light"
-              onClick={() => onDelete(todo.id)}
-              aria-label="Delete"
-              style={{ width: 32, height: 32, padding: 0 }}
-              onMouseEnter={e => { e.currentTarget.classList.add('is-danger'); e.currentTarget.classList.remove('is-light') }}
-              onMouseLeave={e => { e.currentTarget.classList.remove('is-danger'); e.currentTarget.classList.add('is-light') }}
-            >
-              <span className="material-icons" style={{ fontSize: 16 }}>delete_outline</span>
-            </button>
-          </div>
-        </div>
+        {/* Delete — pushed right */}
+        <button
+          onClick={() => onDelete(todo.id)}
+          aria-label="Delete"
+          style={{
+            marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer',
+            color: '#9ca3af', display: 'flex', alignItems: 'center', padding: '2px',
+            borderRadius: 6, transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+          onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+        >
+          <span className="material-icons" style={{ fontSize: 18 }}>delete_outline</span>
+        </button>
       </div>
+
+      {/* ── Bottom row: checkbox + task text ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button
+          onClick={() => onToggle(todo)}
+          aria-label={todo.completed ? 'Mark incomplete' : 'Mark complete'}
+          style={{
+            flexShrink: 0, width: 20, height: 20, borderRadius: '50%',
+            border: todo.completed ? 'none' : '2px solid #d1d5db',
+            backgroundColor: todo.completed ? '#4f46e5' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', transition: 'all 0.2s',
+          }}
+        >
+          {todo.completed && (
+            <svg width="10" height="8" viewBox="0 0 13 10" fill="none">
+              <path d="M1 5l3.5 3.5L12 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </button>
+        <p style={{
+          margin: 0, fontSize: 14, fontWeight: 500,
+          color: todo.completed ? '#9ca3af' : '#111827',
+          textDecoration: todo.completed ? 'line-through' : 'none',
+          lineHeight: 1.4,
+        }}>
+          {todo.text}
+        </p>
+      </div>
+
+      {/* ── Extra meta (time / notes) ── */}
+      {(todo.scheduledTime || todo.timeEstimate || todo.notes) && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, paddingLeft: 30 }}>
+          {todo.scheduledTime && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#6b7280' }}>
+              <span className="material-icons" style={{ fontSize: 13 }}>schedule</span>
+              {todo.scheduledTime}
+            </span>
+          )}
+          {todo.timeEstimate && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#6b7280' }}>
+              <span className="material-icons" style={{ fontSize: 13 }}>timer</span>
+              {todo.timeEstimate} min
+            </span>
+          )}
+          {todo.notes && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
+              <span className="material-icons" style={{ fontSize: 12 }}>lightbulb</span>
+              {todo.notes}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }

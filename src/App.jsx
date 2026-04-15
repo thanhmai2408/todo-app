@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react'
-import ProgressBar from './components/ProgressBar'
 import TodayView from './components/TodayView'
 import ScheduleBuilder from './components/ScheduleBuilder'
 import SettingsView from './components/SettingsView'
 
 const API = '/api/todos'
-
-const TABS = [
-  { id: 'today',    icon: 'today',        label: 'Today'    },
-  { id: 'schedule', icon: 'auto_awesome', label: 'Build'    },
-  { id: 'settings', icon: 'settings',     label: 'Settings' },
-]
 
 function loadLocal(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback }
@@ -18,11 +11,13 @@ function loadLocal(key, fallback) {
 }
 
 export default function App() {
-  const [todos, setTodos]           = useState([])
-  const [tab, setTab]               = useState('today')
-  const [kidProfile, setKidProfile] = useState(() => loadLocal('kidProfile', {}))
-  const [apiKey, setApiKey]         = useState(() => localStorage.getItem('claudeApiKey') || '')
-  const [celebrate, setCelebrate]   = useState(false)
+  const [todos, setTodos]             = useState([])
+  const [tab, setTab]                 = useState('today')
+  const [kidProfile, setKidProfile]   = useState(() => loadLocal('kidProfile', {}))
+  const [apiKey, setApiKey]           = useState(() => localStorage.getItem('claudeApiKey') || '')
+  const [celebrate, setCelebrate]     = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [folders]                     = useState(['Cooking', 'Learning'])
 
   useEffect(() => {
     fetch(API).then(r => r.json()).then(setTodos).catch(() => setTodos([]))
@@ -70,65 +65,86 @@ export default function App() {
   function handleSaveProfile(p) { setKidProfile(p); localStorage.setItem('kidProfile', JSON.stringify(p)) }
   function handleSaveApiKey(k) { setApiKey(k); localStorage.setItem('claudeApiKey', k) }
 
-  const kidName = kidProfile?.name || ''
+  const kidName = kidProfile?.name || 'Jane'
+
+  function handleAddTaskClick() {
+    setTab('today')
+    setShowAddForm(true)
+  }
 
   return (
     <div className="app-layout">
 
-      {/* ── Sidebar ── */}
-      <aside className="app-sidebar">
-        {/* Brand */}
-        <div style={{ padding: '4px 8px 16px', borderBottom: '1px solid #ededed', marginBottom: 8 }}>
-          <p className="title is-6 mb-1">{kidName ? `${kidName}'s Homework` : 'Focus Time'}</p>
-          <p className="help">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
+      {/* ── Top Navbar ── */}
+      <header className="app-topbar">
+        <span className="app-brand">LittleWin</span>
+        <div className="app-topbar-right">
+          <button className="app-icon-btn" aria-label="Help">
+            <span className="material-icons">help_outline</span>
+          </button>
+          <button className="app-icon-btn" aria-label="Notifications">
+            <span className="material-icons">notifications</span>
+            <span className="notif-dot" />
+          </button>
+          <div className="app-avatar" onClick={() => setTab('settings')} title="Settings">
+            <span className="material-icons">account_circle</span>
+          </div>
+          <button className="app-topbar-add-btn" onClick={handleAddTaskClick}>
+            Add Task
+          </button>
         </div>
+      </header>
 
-        {/* Nav */}
-        <aside className="menu" style={{ flex: 1 }}>
-          <p className="menu-label">Navigation</p>
-          <ul className="menu-list">
-            {TABS.map(t => (
-              <li key={t.id}>
-                <a
-                  className={tab === t.id ? 'is-active' : ''}
-                  onClick={() => setTab(t.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-                >
-                  <span className="material-icons" style={{ fontSize: 20 }}>{t.icon}</span>
-                  {t.label}
-                </a>
-              </li>
+      {/* ── Body ── */}
+      <div className="app-body">
+
+        {/* ── Left Sidebar ── */}
+        <aside className="app-sidebar">
+          <nav>
+            <a className={`app-nav-item${tab === 'today' ? ' is-active' : ''}`} onClick={() => setTab('today')}>
+              <span className="material-icons">calendar_today</span>
+              Today
+            </a>
+            <a className={`app-nav-item${tab === 'schedule' ? ' is-active' : ''}`} onClick={() => setTab('schedule')}>
+              <span className="material-icons">grid_view</span>
+              Build
+            </a>
+          </nav>
+
+          <hr className="app-sidebar-divider" />
+
+          <button className="app-add-folder-btn">
+            <span className="material-icons">add</span>
+            Add Folder
+          </button>
+
+          <nav>
+            {folders.map(folder => (
+              <a key={folder} className="app-nav-item app-folder-item">
+                <span className="material-icons">folder</span>
+                {folder}
+              </a>
             ))}
-          </ul>
+          </nav>
 
-          <hr style={{ border: 'none', borderTop: '1px solid #ededed', margin: '12px 0' }} />
-
-          <p className="menu-label">Today's Progress</p>
-          <ProgressBar todos={todos} />
+          {!apiKey && (
+            <div className="app-sidebar-bottom">
+              <button onClick={() => setTab('settings')} className="button is-warning is-light is-fullwidth is-small">
+                <span className="icon"><span className="material-icons" style={{ fontSize: 16 }}>key</span></span>
+                <span>Setup Claude AI</span>
+              </button>
+            </div>
+          )}
         </aside>
 
-        {/* API key CTA */}
-        {!apiKey && (
-          <div style={{ marginTop: 12 }}>
-            <button
-              onClick={() => setTab('settings')}
-              className="button is-warning is-light is-fullwidth is-small"
-            >
-              <span className="icon"><span className="material-icons" style={{ fontSize: 16 }}>key</span></span>
-              <span>Setup Claude AI</span>
-            </button>
-          </div>
-        )}
-      </aside>
+        {/* ── Main Content ── */}
+        <main className="app-main">
+          {tab === 'today'    && <TodayView todos={todos} onAdd={addTodo} onToggle={toggleTodo} onToggleMomHelp={toggleMomHelp} onDelete={deleteTodo} kidName={kidName} showAddForm={showAddForm} onSetShowAddForm={setShowAddForm} />}
+          {tab === 'schedule' && <ScheduleBuilder kidProfile={kidProfile} onAddTasks={addTasks} hasApiKey={!!apiKey} />}
+          {tab === 'settings' && <SettingsView kidProfile={kidProfile} onSaveProfile={handleSaveProfile} apiKey={apiKey} onSaveApiKey={handleSaveApiKey} />}
+        </main>
 
-      {/* ── Main Content ── */}
-      <main className="app-main">
-        {tab === 'today'    && <TodayView todos={todos} onAdd={addTodo} onToggle={toggleTodo} onToggleMomHelp={toggleMomHelp} onDelete={deleteTodo} />}
-        {tab === 'schedule' && <ScheduleBuilder kidProfile={kidProfile} onAddTasks={addTasks} hasApiKey={!!apiKey} />}
-        {tab === 'settings' && <SettingsView kidProfile={kidProfile} onSaveProfile={handleSaveProfile} apiKey={apiKey} onSaveApiKey={handleSaveApiKey} />}
-      </main>
+      </div>
 
       {/* ── Celebration overlay ── */}
       {celebrate && (
@@ -136,8 +152,8 @@ export default function App() {
           <div className="modal-background" style={{ pointerEvents: 'none', backdropFilter: 'blur(2px)' }} />
           <div className="modal-content" style={{ width: 'auto' }}>
             <div className="box has-text-centered" style={{ padding: '40px 56px' }}>
-              <span className="material-icons" style={{ fontSize: 56, color: '#00d1b2', display: 'block', marginBottom: 12 }}>celebration</span>
-              <p className="title is-4" style={{ color: '#00d1b2' }}>All Done!</p>
+              <span className="material-icons" style={{ fontSize: 56, color: '#4f46e5', display: 'block', marginBottom: 12 }}>celebration</span>
+              <p className="title is-4" style={{ color: '#4f46e5' }}>All Done!</p>
               <p className="subtitle is-6">Amazing work today!</p>
             </div>
           </div>
