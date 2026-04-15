@@ -4,9 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"json-server db.json --port 3001\"",
-    "server": "json-server db.json --port 3001",
-    "client": "vite",
+    "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -14,6 +12,7 @@
   "dependencies": {
     "@fontsource/material-icons": "^5.2.7",
     "@fontsource/roboto": "^5.2.10",
+    "@supabase/supabase-js": "^2.103.0",
     "bulma": "^1.0.4",
     "concurrently": "^9.2.1",
     "json-server": "^1.0.0-beta.15",
