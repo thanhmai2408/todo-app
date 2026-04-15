@@ -106,7 +106,7 @@ export default function ScheduleBuilder({ kidProfile, onAddTasks, hasApiKey }) {
       </div>
 
       {/* Desktop two-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: generated ? '1fr 1fr' : '600px', gap: 32, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: generated ? '1fr 1fr' : '600px', gap: 32, alignItems: 'start', justifyContent: 'center' }}>
 
         {/* Left: input panel */}
         <div className="card">
