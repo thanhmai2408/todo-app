@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TodayView from './components/TodayView'
 import ScheduleBuilder from './components/ScheduleBuilder'
 import SettingsView from './components/SettingsView'
@@ -16,12 +16,65 @@ export default function App() {
   const [kidProfile, setKidProfile]   = useState(() => loadLocal('kidProfile', {}))
   const [apiKey, setApiKey]           = useState(() => localStorage.getItem('claudeApiKey') || '')
   const [celebrate, setCelebrate]     = useState(false)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [folders]                     = useState(['Cooking', 'Learning'])
+  const [showAddForm, setShowAddForm]   = useState(false)
+
+  // Folder state
+  const [folders, setFolders]                     = useState([
+    { id: '1', name: 'Cooking' },
+    { id: '2', name: 'Learning' },
+  ])
+  const [editingFolderId, setEditingFolderId]     = useState(null)
+  const [hoveredFolderId, setHoveredFolderId]     = useState(null)
+  const [openMenuFolderId, setOpenMenuFolderId]   = useState(null)
+  const menuRef                                   = useRef(null)
 
   useEffect(() => {
     fetch(API).then(r => r.json()).then(setTodos).catch(() => setTodos([]))
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!openMenuFolderId) return
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenuFolderId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [openMenuFolderId])
+
+  function handleAddFolder() {
+    const id = Date.now().toString()
+    setFolders(prev => [...prev, { id, name: '' }])
+    setEditingFolderId(id)
+  }
+
+  function handleFolderNameChange(id, name) {
+    setFolders(prev => prev.map(f => f.id === id ? { ...f, name } : f))
+  }
+
+  function handleFolderBlur(folder) {
+    if (!folder.name.trim()) setFolders(prev => prev.filter(f => f.id !== folder.id))
+    setEditingFolderId(null)
+  }
+
+  function handleFolderKeyDown(e, folder) {
+    if (e.key === 'Enter') {
+      if (!folder.name.trim()) setFolders(prev => prev.filter(f => f.id !== folder.id))
+      setEditingFolderId(null)
+    }
+    if (e.key === 'Escape') {
+      setFolders(prev => prev.filter(f => f.id !== folder.id))
+      setEditingFolderId(null)
+    }
+  }
+
+  function handleDeleteFolder(id) {
+    setFolders(prev => prev.filter(f => f.id !== id))
+    setOpenMenuFolderId(null)
+    setHoveredFolderId(null)
+  }
 
   async function addTodo(data) {
     const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
@@ -113,18 +166,99 @@ export default function App() {
 
           <hr className="app-sidebar-divider" />
 
-          <button className="app-add-folder-btn">
+          <button className="app-add-folder-btn" onClick={handleAddFolder}>
             <span className="material-icons">add</span>
             Add Folder
           </button>
 
           <nav>
-            {folders.map(folder => (
-              <a key={folder} className="app-nav-item app-folder-item">
-                <span className="material-icons">folder</span>
-                {folder}
-              </a>
-            ))}
+            {folders.map(folder => {
+              const isEditing  = editingFolderId  === folder.id
+              const isHovered  = hoveredFolderId  === folder.id
+              const isMenuOpen = openMenuFolderId === folder.id
+
+              return (
+                <div
+                  key={folder.id}
+                  className="app-nav-item app-folder-item"
+                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, paddingRight: 4 }}
+                  onMouseEnter={() => setHoveredFolderId(folder.id)}
+                  onMouseLeave={() => { if (!isMenuOpen) setHoveredFolderId(null) }}
+                >
+                  <span className="material-icons" style={{ fontSize: 18, flexShrink: 0, color: '#6b7280' }}>folder</span>
+
+                  {isEditing ? (
+                    <input
+                      autoFocus
+                      value={folder.name}
+                      onChange={e => handleFolderNameChange(folder.id, e.target.value)}
+                      onBlur={() => handleFolderBlur(folder)}
+                      onKeyDown={e => handleFolderKeyDown(e, folder)}
+                      placeholder="Folder name"
+                      style={{
+                        flex: 1, border: 'none', outline: 'none',
+                        background: 'transparent', fontSize: 13,
+                        fontWeight: 500, color: '#374151', minWidth: 0,
+                      }}
+                    />
+                  ) : (
+                    <span style={{
+                      flex: 1, fontSize: 13, fontWeight: 500, color: '#6b7280',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {folder.name || 'Untitled'}
+                    </span>
+                  )}
+
+                  {/* Three-dots — visible on hover or when menu is open */}
+                  {(isHovered || isMenuOpen) && !isEditing && (
+                    <div style={{ position: 'relative', flexShrink: 0 }} ref={isMenuOpen ? menuRef : null}>
+                      <button
+                        onClick={e => { e.stopPropagation(); setOpenMenuFolderId(isMenuOpen ? null : folder.id) }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 24, height: 24, borderRadius: 6,
+                          background: isMenuOpen ? '#e5e7eb' : 'transparent',
+                          border: 'none', cursor: 'pointer', color: '#6b7280',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'}
+                        onMouseLeave={e => { if (!isMenuOpen) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <span className="material-icons" style={{ fontSize: 16 }}>more_horiz</span>
+                      </button>
+
+                      {/* Dropdown */}
+                      {isMenuOpen && (
+                        <div style={{
+                          position: 'absolute', top: '100%', right: 0, marginTop: 4,
+                          background: '#fff', borderRadius: 10,
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                          border: '1px solid #e5e7eb',
+                          minWidth: 140, zIndex: 100, overflow: 'hidden',
+                        }}>
+                          <button
+                            onClick={() => handleDeleteFolder(folder.id)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 8,
+                              width: '100%', padding: '10px 14px',
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              fontSize: 13, fontWeight: 500, color: '#ef4444',
+                              textAlign: 'left', transition: 'background 0.15s',
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                          >
+                            <span className="material-icons" style={{ fontSize: 16 }}>delete_outline</span>
+                            Delete folder
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </nav>
 
           {!apiKey && (
